@@ -1,0 +1,41 @@
+name: aviso-telegram
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:         
+
+concurrency:
+  group: aviso
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install telethon httpx
+
+
+      - uses: actions/cache@v4
+        with:
+          path: state
+          key: state-${{ github.run_id }}
+          restore-keys: state-
+
+      - run: python poll.py
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          TG_SESSION: ${{ secrets.TG_SESSION }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          NOTIFY_CHAT_ID: ${{ secrets.NOTIFY_CHAT_ID }}
+          GROUP: ${{ secrets.GROUP }}
+          TARGET_USER: ${{ secrets.TARGET_USER }}
+          TOPIC_ID: ${{ secrets.TOPIC_ID }}
